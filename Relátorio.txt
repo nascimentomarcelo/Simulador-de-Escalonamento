@@ -1,0 +1,5 @@
+Sistemas Operacionais - Trabalho 1 
+
+Implementação de um escalonador de processos
+
+Aluno: Marcelo Nascimento da Silva 
