@@ -58,17 +58,22 @@ class Escalonador:
         return all(p.estado == EstadoProcesso.EXIT for p in self.processos)
 
     def obter_proximo_processo(self, atual):
+        
         proximo_processo = None
 
+        # responsavel por seguir a ordem de execução a partir do atual 
         if not atual is None:
             indice_acessado = self.processos.index(atual)
+            # se o processo atual for o último da lista, define a ordem original de processos 
             if indice_acessado + 1  >= len(self.processos):
                 ordem_processos = self.processos
             else:
+                # organiza a lista de processos para começar a partir do próximo processo após o atual
                 ordem_processos = self.processos[indice_acessado+1:] + self.processos[:indice_acessado+1]
         else:
             ordem_processos = self.processos
         
+        # ATENÇÃO!
         for processo in ordem_processos:
             if not processo.estado in [EstadoProcesso.BLOCKED, EstadoProcesso.EXIT]:
                 if proximo_processo is None or (processo.creditos > proximo_processo.creditos and processo != self.ultimo_processo):
@@ -81,12 +86,16 @@ class Escalonador:
     def executar_processo(self, processo):
         if self.processo_executando != processo:
             if self.processo_executando:
+                 # se há um processo sendo executado, muda seu estado para "READY"
                 self.processo_executando.estado = EstadoProcesso.READY
             self.processo_executando = processo
+            # atualiza o processo atual para o estado "RUNNING"
             processo.estado = EstadoProcesso.RUNNING
             if processo.tempo_inicio == 0:
+                # se o processo está sendo executado pela primeira vez, define o tempo de início
                 processo.tempo_inicio = self.tempo_atual
 
+        # decrementa e inclementa os tempos e creditos
         processo.tempo_cpu_restante -= 1
         processo.creditos -= 1
         processo.tempo_execucao += 1
@@ -98,6 +107,8 @@ class Escalonador:
             processo.tempo_conclusao = self.tempo_atual
             processo.creditos = 0
             self.processo_executando = None
+        # verifica se o processo completou seu ciclo de CPU (CPU burst)
+        # muda o estado do processo para "BLOCKED" (bloqueado para I/O)
         elif processo.tempo_execucao == processo.cpu_burst:
             processo.estado = EstadoProcesso.BLOCKED
             processo.tempo_bloqueado_restante = processo.duracao_io
